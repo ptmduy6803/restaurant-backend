@@ -16,6 +16,7 @@ async function bootstrap() {
     .setTitle('Restaurant API')
     .setDescription('Backend API for the restaurant application')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
