@@ -56,7 +56,11 @@ export class CategoriesService {
   }
 
   async update(id: string, dto: UpdateCategoryDto) {
-    if (Object.keys(dto).length === 0) {
+    const data = Object.fromEntries(
+      Object.entries(dto).filter(([, value]) => value !== undefined)
+    );
+
+    if (Object.keys(data).length === 0) {
       throw new BadRequestException('No fields to update');
     }
 
@@ -65,7 +69,7 @@ export class CategoriesService {
     try {
       return await this.prisma.category.update({
         where: { id },
-        data: dto
+        data: data
       });
     } catch (error) {
       if (
