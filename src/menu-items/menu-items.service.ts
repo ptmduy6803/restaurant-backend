@@ -17,10 +17,37 @@ export class MenuItemsService {
     private readonly categoriesService: CategoriesService,
   ) {}
 
+  // ===== Public ===== //
+  async findAll(categoryId?: string) {
+    return this.prisma.menuItem.findMany({
+      where: {
+        isAvailable: true,
+        ...(categoryId !== undefined && { categoryId }),
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async findOne(id: string) {
+    const menuItem = await this.prisma.menuItem.findFirst({
+      where: {
+        id,
+        isAvailable: true,
+      },
+    });
+
+    if (!menuItem) {
+      throw new NotFoundException('Menu item not found');
+    }
+
+    return menuItem;
+  }
+
+  // ===== Admin ===== //
   async create(dto: CreateMenuItemDto) {
     const category = await this.prisma.category.findUnique({
-      where: { id: dto.categoryId }
-    })
+      where: { id: dto.categoryId },
+    });
 
     if (!category) {
       throw new NotFoundException('Category not found');
@@ -35,8 +62,8 @@ export class MenuItemsService {
           imageUrl: dto.imageUrl,
           isAvailable: dto.isAvailable ?? true,
           categoryId: dto.categoryId,
-        }
-      })
+        },
+      });
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -49,18 +76,19 @@ export class MenuItemsService {
     }
   }
 
-  async findAll() {
+  async findAllForAdmin(categoryId?: string) {
     return this.prisma.menuItem.findMany({
-      orderBy: {
-        name: 'asc'
-      }
-    })
+      where: {
+        ...(categoryId !== undefined && { categoryId }),
+      },
+      orderBy: { name: 'asc' },
+    });
   }
 
-  async findOne(id: string) {
-    const menuItem = await this.prisma.menuItem.findUnique({
-      where: { id}
-    })
+  async findOneForAdmin(id: string) {
+    const menuItem = await this.prisma.menuItem.findFirst({
+      where: { id }
+    });
 
     if (!menuItem) {
       throw new NotFoundException('Menu item not found');
@@ -71,22 +99,22 @@ export class MenuItemsService {
 
   async update(id: string, dto: UpdateMenuItemDto) {
     const data = Object.fromEntries(
-      Object.entries(dto).filter(([, value]) => value !== undefined)
+      Object.entries(dto).filter(([, value]) => value !== undefined),
     );
 
     if (Object.keys(data).length === 0) {
       throw new BadRequestException('No fields to update');
     }
 
-    await this.findOne(id);
+    await this.findOneForAdmin(id);
     if (dto.categoryId !== undefined) {
       await this.categoriesService.findOne(dto.categoryId);
     }
 
     try {
       return await this.prisma.menuItem.update({
-        where: {id},
-        data
+        where: { id },
+        data,
       });
     } catch (error) {
       if (
@@ -101,11 +129,11 @@ export class MenuItemsService {
   }
 
   async toggle(id: string) {
-    const menuItem = await this.findOne(id);
+    const menuItem = await this.findOneForAdmin(id);
 
     return this.prisma.menuItem.update({
       where: { id },
-      data: { isAvailable: !menuItem.isAvailable }
-    })
+      data: { isAvailable: !menuItem.isAvailable },
+    });
   }
 }
