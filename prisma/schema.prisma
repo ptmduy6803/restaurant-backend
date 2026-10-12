@@ -39,6 +39,7 @@ model User {
 
   orders   Order[]
   sessions Session[]
+  cart     Cart?
 
   @@map("users")
 }
@@ -67,6 +68,7 @@ model MenuItem {
 
   category   Category    @relation(fields: [categoryId], references: [id])
   orderItems OrderItem[]
+  cartItems  CartItem[]
 
   @@map("menu_items")
 }
@@ -115,4 +117,31 @@ model Session {
 
   @@index([userId])
   @@map("sessions")
+}
+
+model Cart {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cartItems CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id         String   @id @default(uuid()) @db.Uuid
+  cartId     String   @map("cart_id") @db.Uuid
+  menuItemId String   @map("menu_item_id") @db.Uuid
+  quantity   Int
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  cart     Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@unique([cartId, menuItemId])
+  @@map("cart_items")
 }
