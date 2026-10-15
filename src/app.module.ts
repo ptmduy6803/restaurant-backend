@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { CategoriesModule } from './categories/categories.module';
 import { MenuItemsModule} from './menu-items/menu-items.module';
+import { OrdersModule } from './order/orders.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './users/users.module';
 
@@ -20,6 +21,7 @@ import { UsersModule } from './users/users.module';
     CartModule,
     CategoriesModule,
     MenuItemsModule,
+    OrdersModule,
     PrismaModule,
     UsersModule,
   ],
